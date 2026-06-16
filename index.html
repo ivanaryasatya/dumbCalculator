@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Modern</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Impor pustaka Math.js dari CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.1/math.min.js"></script>
+</head>
+<body>
+    <h1>Real Quantum Calculator</h1>
+    <div class="calculator">
+        <div class="quantum-scene" aria-hidden="true">
+            <span class="atom-core"></span>
+            <span class="orbit orbit-1"></span>
+            <span class="orbit orbit-2"></span>
+            <span class="orbit orbit-3"></span>
+        </div>
+        <div class="display">
+            <div class="display-label">Quantum Mode</div>
+            <input type="text" id="result" readonly placeholder="0">
+        </div>
+        <div class="buttons">
+            <!-- Baris 1: Fungsi Kompleks -->
+            <button class="btn operator" data-value="sin(">sin</button>
+            <button class="btn operator" data-value="cos(">cos</button>
+            <button class="btn operator" data-value="tan(">tan</button>
+            <button class="btn operator" data-value="log(">log</button>
+            
+            <!-- Baris 2: Fungsi Kompleks & Kurung -->
+            <button class="btn operator" data-value="sqrt(">√</button>
+            <button class="btn operator" data-value="^">^</button>
+            <button class="btn operator" data-value="(">(</button>
+            <button class="btn operator" data-value=")">)</button>
+
+            <!-- Baris 3: Tombol Kontrol & Operator Dasar -->
+            <button class="btn clear" data-action="clear">C</button>
+            <button class="btn operator" data-value="/">÷</button>
+            <button class="btn operator" data-value="*">×</button>
+            <button class="btn backspace" data-action="backspace">⌫</button>
+
+            <!-- Baris 4: Angka & Operator -->
+            <button class="btn" data-value="7">7</button>
+            <button class="btn" data-value="8">8</button>
+            <button class="btn" data-value="9">9</button>
+            <button class="btn operator" data-value="-">−</button>
+
+            <!-- Baris 5: Angka & Operator -->
+            <button class="btn" data-value="4">4</button>
+            <button class="btn" data-value="5">5</button>
+            <button class="btn" data-value="6">6</button>
+            <button class="btn operator" data-value="+">+</button>
+
+            <!-- Baris 6 & 7: Angka, Titik, dan Tombol Sama Dengan -->
+            <button class="btn" data-value="1">1</button>
+            <button class="btn" data-value="2">2</button>
+            <button class="btn" data-value="3">3</button>
+            <button class="btn equals" data-action="calculate">=</button>
+            <button class="btn zero" data-value="0">0</button>
+            <button class="btn" data-value=".">.</button>
+        </div>
+    </div>
+
+    <!-- Modal Langganan -->
+    <div id="subscription-modal" class="modal-overlay">
+        <div class="modal-content">
+            <!-- Tampilan Pemilihan Paket -->
+            <div id="plan-selection-view">
+                <button class="close-modal" data-action="close-modal">&times;</button>
+                <h2>Buka Potensi Penuh Kalkulator!</h2>
+                <p>Pilih paket untuk melihat hasil Anda dan mengakses fitur-fitur canggih.</p>
+                <div class="plans">
+                    <div class="plan">
+                        <h3 data-plan-name="Basic">Basic</h3>
+                        <p class="price" data-plan-price="$99">$99<span>/bln</span></p>
+                        <ul>
+                            <li>Perhitungan Dasar</li>
+                            <li>Riwayat Perhitungan</li>
+                            <li>Dukungan Standar</li>
+                        </ul>
+                        <button class="btn-subscribe">Berlangganan</button>
+                    </div>
+                    <div class="plan popular">
+                        <h3 data-plan-name="Pro">Pro</h3>
+                        <p class="price" data-plan-price="$199">$199<span>/bln</span></p>
+                        <ul>
+                            <li>Semua Fitur Basic</li>
+                            <li>Fungsi Kompleks</li>
+                            <li>Mode Grafik</li>
+                            <li>Dukungan Prioritas</li>
+                        </ul>
+                        <button class="btn-subscribe">Berlangganan</button>
+                    </div>
+                    <div class="plan">
+                        <h3 data-plan-name="Enterprise">Enterprise</h3>
+                        <p class="price" data-plan-price="$499">$499<span>/bln</span></p>
+                        <ul>
+                            <li>Semua Fitur Pro</li>
+                            <li>Akses API</li>
+                            <li>Dukungan Khusus</li>
+                        </ul>
+                        <button class="btn-subscribe">Berlangganan</button>
+                    </div>
+                </div>
+                <div class="trial-section">
+                    <button id="free-trial-btn" class="btn-trial">Lanjutkan dengan Free Trial untuk melihat hasil</button>
+                </div>
+            </div>
+
+            <!-- Tampilan Pembayaran (disembunyikan) -->
+            <div id="payment-view" class="hidden">
+                <button class="back-to-plans" title="Kembali ke pilihan paket">&larr;</button>
+                <h2>Detail Pembayaran</h2>
+                <p>Anda memilih paket <strong id="selected-plan-name"></strong> seharga <strong id="selected-plan-price">/bln</strong>.</p>
+                
+                <div class="payment-methods">
+                    <button class="payment-method-tab active" data-target="credit-card-panel">Kartu Kredit</button>
+                    <button class="payment-method-tab" data-target="ewallet-panel">E-Wallet & Pulsa</button>
+                    <button class="payment-method-tab" data-target="bank-transfer-panel">Transfer Bank</button>
+                </div>
+
+                <form id="payment-form">
+                    <!-- Panel Kartu Kredit -->
+                    <div id="credit-card-panel" class="payment-panel active">
+                        <div class="form-group">
+                            <label for="card-number">Nomor Kartu (16 digit)</label>
+                            <input type="text" id="card-number" placeholder="xxxx xxxx xxxx xxxx" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="card-expiry">Masa Berlaku (MM/YY)</label>
+                                <input type="text" id="card-expiry" placeholder="MM/YY" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="card-cvv">Kode CVV/CVC (3 digit)</label>
+                                <input type="text" id="card-cvv" placeholder="123" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="card-name">Nama Pemegang Kartu</label>
+                            <input type="text" id="card-name" placeholder="John Doe" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="billing-address">Alamat Tagihan & Kode Pos (Opsional)</label>
+                            <input type="text" id="billing-address" placeholder="Jl. Jend. Sudirman No.Kav. 52-53">
+                        </div>
+                    </div>
+
+                    <!-- Panel E-Wallet -->
+                    <div id="ewallet-panel" class="payment-panel">
+                        <div class="form-group">
+                            <label for="phone-number">Nomor HP yang terdaftar</label>
+                            <input type="tel" id="phone-number" placeholder="0812xxxxxxxx" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="pin-otp">PIN / Kode OTP Verifikasi</label>
+                            <input type="password" id="pin-otp" placeholder="******" required>
+                        </div>
+                    </div>
+
+                    <!-- Panel Transfer Bank -->
+                    <div id="bank-transfer-panel" class="payment-panel">
+                        <div class="form-group">
+                            <label for="bank-selection">Pilih Bank</label>
+                            <select id="bank-selection" required><option value="" disabled selected>-- Pilih Bank & Metode --</option><option value="bca_va">BCA Virtual Account</option><option value="mandiri_va">Mandiri Virtual Account</option><option value="bni_va">BNI Virtual Account</option></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="full-name">Nama Lengkap</label>
+                            <input type="text" id="full-name" placeholder="Sesuai rekening bank" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Alamat Email</label>
+                            <input type="email" id="email" placeholder="Untuk pengiriman invoice" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-pay">Bayar Sekarang</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
